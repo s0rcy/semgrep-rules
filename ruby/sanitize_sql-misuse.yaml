@@ -1,0 +1,29 @@
+rules:
+  - id: sanitize_sql-misuse
+    languages:
+      - ruby
+    message: sanitize_sql does not perform sanitization and reflects input string as is if used with a single string or array with a single string. This may result in SQL injection.
+    severity: ERROR
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe: "CWE-89: Improper Neutralization of Special Elements used in an SQL Command ('SQL Injection')"
+      confidence: MEDIUM
+      likelihood: MEDIUM
+      impact: MEDIUM
+      description: "Potential SQL injection due to misuse of `sanitize_sql()`"
+      references:
+        - https://api.rubyonrails.org/classes/ActiveRecord/Sanitization/ClassMethods.html
+
+    patterns:
+      - pattern-either:
+          - pattern: $SQLSANITIZE($X)
+          - pattern: $F(:$SQLSANITIZE, $X)
+          - pattern: $M::$SQLSANITIZE $X
+      - pattern-not-inside: $SQLSANITIZE([..., ...])
+      - pattern-not-inside: $F(:$SQLSANITIZE, [..., ...])
+      - pattern-not-inside: $M::$SQLSANITIZE [..., ...]
+      - metavariable-regex:
+            metavariable: $SQLSANITIZE
+            regex: ^(sanitize_sql|sanitize_sql_array|sanitize_sql_for_assignment|sanitize_sql_for_conditions|sanitize_sql_for_order)$
