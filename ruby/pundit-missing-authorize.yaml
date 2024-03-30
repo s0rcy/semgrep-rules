@@ -1,0 +1,34 @@
+rules:
+  - id: find_missing_authorize
+    languages:
+      - ruby
+    message: Pundit authorize call missing after privileged model access. Adjust SensitiveModel1/2 to the codebase.
+    severity: WARNING
+    metadata:
+      category: security
+      subcategory:
+        - vuln
+      cwe: "CWE-862: Missing Authorization"
+      description: "Potential access bypass due to missing Pundit authorization"
+    mode: taint
+    pattern-sources:
+      - pattern: "params[...]"
+    pattern-sinks:
+      - patterns:
+          - pattern: |
+              $DATA = $PRIVCALL(...)
+          - pattern-not-inside: |
+              $DATA = $PRIVCALL(...)
+              ...
+              authorize $DATA
+          - metavariable-pattern:
+              metavariable: $PRIVCALL
+              pattern-either:
+                - patterns:
+                    - pattern: "$CLASSES.$METHODS"
+                    - metavariable-regex:
+                        metavariable: $METHODS
+                        regex: "(find|find_*|where|first|last|select|all|pluck|joins)"
+                    - metavariable-regex:
+                        metavariable: $CLASSES
+                        regex: "(SensitiveModel1|SensitiveModel2)"
