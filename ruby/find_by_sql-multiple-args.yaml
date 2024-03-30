@@ -1,0 +1,9 @@
+rules:
+  - id: find_by_sql_multiple_args
+    languages:
+      - ruby
+    message: find_by_sql used with more than one arg, binds are not sanitized by rails. Database is responsible for processing binds - confirm that database supports secure processing of binds.
+    severity: WARNING
+    patterns:
+      - pattern: $F.find_by_sql($X, ...)
+      - pattern-not-inside: $F.find_by_sql([...])
